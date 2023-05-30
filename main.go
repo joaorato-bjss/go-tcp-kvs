@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"go-tcp-kvs/server"
 	"go-tcp-kvs/server/logger"
+	"go-tcp-kvs/store"
 	"net"
 	"os"
 	"strconv"
 )
+
+var done chan bool
 
 func main() {
 	logFile := logger.SetLogs()
@@ -15,11 +18,18 @@ func main() {
 		_ = logFile.Close()
 	}(logFile)
 
+	done = make(chan bool)
+
 	args := os.Args
 
 	port := setPort(args)
 
+	store.InitStore(0)
+
 	go startTCP(port)
+
+	<-done
+	os.Exit(0)
 }
 
 func setPort(args []string) string {
@@ -47,6 +57,6 @@ func startTCP(port string) {
 			return
 		}
 
-		go server.HandleConnection(c)
+		go server.HandleConnection(c, done)
 	}
 }

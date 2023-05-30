@@ -11,15 +11,13 @@ type Store struct {
 }
 
 type Entry struct {
-	Owner        string    `json:"owner"`
-	Value        any       `json:"value"`
+	Value        string    `json:"value"`
 	Writes       int       `json:"writes"`
 	Reads        int       `json:"reads"`
 	LastAccessed time.Time `json:"lastAccessed"`
 }
 
 var ErrNotFound = errors.New("not found")
-var ErrNotOwner = errors.New("not owner")
 
 var storage Store
 var requestChannel chan any
@@ -43,7 +41,7 @@ func listen() {
 	for request := range requestChannel {
 		switch event := request.(type) {
 		case StorePutRequest:
-			err := put(event.Key, event.User, event.Data)
+			err := put(event.Key, event.Data)
 			storePutResponse := StorePutResponse{
 				Error: err,
 			}
@@ -62,7 +60,7 @@ func listen() {
 			close(event.RespChannel)
 
 		case StoreDeleteRequest:
-			err := del(event.Key, event.User)
+			err := del(event.Key)
 			storeDeleteResponse := StoreDeleteResponse{
 				Error: err,
 			}
@@ -71,15 +69,14 @@ func listen() {
 			close(event.RespChannel)
 
 		case ListGetRequest:
-			owner, writes, reads, age, err := list(event.Key)
+			writes, reads, age, err := list(event.Key)
 			listGetResponse := ListGetResponse{
 				Data: struct {
 					Key    string `json:"key"`
-					Owner  string `json:"owner"`
 					Writes int    `json:"writes"`
 					Reads  int    `json:"reads"`
 					Age    int64  `json:"age"`
-				}{event.Key, owner, writes, reads, age},
+				}{event.Key, writes, reads, age},
 				Error: err,
 			}
 
@@ -98,22 +95,19 @@ func listen() {
 	}
 }
 
-func put(key string, user string, value any) error {
+func put(key string, value string) error {
 	var entry *Entry
 
 	element, ok := storage.Data[key]
 
 	if ok {
 		// check if user is same as owner and update value if so
-		if !authorised(user, element.Owner) {
-			return fmt.Errorf("put: %q %w of %q", user, ErrNotOwner, key)
-		}
 		element.Value = value
 		element.Writes += 1
 		element.LastAccessed = time.Now()
 	} else {
 		// create value anew
-		entry = &Entry{Owner: user, Value: value, Writes: 1, Reads: 0, LastAccessed: time.Now()}
+		entry = &Entry{Value: value, Writes: 1, Reads: 0, LastAccessed: time.Now()}
 
 		// check if size is equal to depth
 		storeSize := len(storage.Data)
@@ -130,7 +124,7 @@ func put(key string, user string, value any) error {
 	return nil
 }
 
-func get(key string) (any, error) {
+func get(key string) (string, error) {
 	entry, ok := storage.Data[key]
 
 	if !ok {
@@ -141,15 +135,11 @@ func get(key string) (any, error) {
 	return entry.Value, nil
 }
 
-func del(key string, user string) error {
-	entry, ok := storage.Data[key]
+func del(key string) error {
+	_, ok := storage.Data[key]
 
 	if !ok {
 		return fmt.Errorf("delete: key %q: %w", key, ErrNotFound)
-	}
-
-	if !authorised(user, entry.Owner) {
-		return fmt.Errorf("delete: %q %w of %q", user, ErrNotOwner, key)
 	}
 
 	delete(storage.Data, key)
@@ -157,22 +147,21 @@ func del(key string, user string) error {
 	return nil
 }
 
-func list(key string) (string, int, int, int64, error) {
+func list(key string) (int, int, int64, error) {
 
 	entry, ok := storage.Data[key]
 
 	if !ok {
-		return "", 0, 0, 0, fmt.Errorf("list: key %q: %w", key, ErrNotFound)
+		return 0, 0, 0, fmt.Errorf("list: key %q: %w", key, ErrNotFound)
 	}
 
 	age := int64(time.Since(entry.LastAccessed) / time.Millisecond)
 
-	return entry.Owner, entry.Writes, entry.Reads, age, nil
+	return entry.Writes, entry.Reads, age, nil
 }
 
 func listAll() []struct {
 	Key    string `json:"key"`
-	Owner  string `json:"owner"`
 	Writes int    `json:"writes"`
 	Reads  int    `json:"reads"`
 	Age    int64  `json:"age"`
@@ -181,7 +170,6 @@ func listAll() []struct {
 	data := storage.Data
 	entries := make([]struct {
 		Key    string `json:"key"`
-		Owner  string `json:"owner"`
 		Writes int    `json:"writes"`
 		Reads  int    `json:"reads"`
 		Age    int64  `json:"age"`
@@ -191,22 +179,13 @@ func listAll() []struct {
 		age := int64(time.Since(entry.LastAccessed) / time.Millisecond)
 		entries = append(entries, struct {
 			Key    string `json:"key"`
-			Owner  string `json:"owner"`
 			Writes int    `json:"writes"`
 			Reads  int    `json:"reads"`
 			Age    int64  `json:"age"`
-		}{key, entry.Owner, entry.Writes, entry.Reads, age})
+		}{key, entry.Writes, entry.Reads, age})
 	}
 
 	return entries
-}
-
-func authorised(user, owner string) bool {
-	if user == "admin" {
-		return true
-	}
-
-	return user == owner
 }
 
 func deleteLeastRecent() {

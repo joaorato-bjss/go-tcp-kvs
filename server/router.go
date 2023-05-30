@@ -8,7 +8,7 @@ import (
 	"net"
 )
 
-func HandleConnection(c net.Conn) {
+func HandleConnection(c net.Conn, done chan bool) {
 	logger.InfoLogger.Println("Handling client request")
 
 	s := bufio.NewScanner(c)
@@ -26,6 +26,8 @@ func HandleConnection(c net.Conn) {
 			handlers.Get(c, txt[3:])
 		case "del":
 			handlers.Delete(c, txt[3:])
+		case "bye":
+			handlers.Bye(c, done)
 		default:
 			logger.ErrorLogger.Println("No valid method. Use 'put', 'get' or 'del'")
 			_, _ = fmt.Fprintf(c, "err")

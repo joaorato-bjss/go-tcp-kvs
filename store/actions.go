@@ -1,10 +1,9 @@
 package store
 
-func DoStorePut(key string, user string, value any) StorePutResponse {
+func DoStorePut(key string, value string) StorePutResponse {
 	responseChannel := make(chan StorePutResponse)
 	request := StorePutRequest{
 		Key:         key,
-		User:        user,
 		Data:        value,
 		RespChannel: responseChannel,
 	}
@@ -24,11 +23,10 @@ func DoStoreGet(key string) StoreGetResponse {
 	return <-responseChannel
 }
 
-func DoStoreDelete(key string, user string) StoreDeleteResponse {
+func DoStoreDelete(key string) StoreDeleteResponse {
 	responseChannel := make(chan StoreDeleteResponse)
 	request := StoreDeleteRequest{
 		Key:         key,
-		User:        user,
 		RespChannel: responseChannel,
 	}
 

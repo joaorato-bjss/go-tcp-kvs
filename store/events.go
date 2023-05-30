@@ -5,8 +5,7 @@ package store
 // PUT
 type StorePutRequest struct {
 	Key         string
-	User        string
-	Data        any
+	Data        string
 	RespChannel chan StorePutResponse
 }
 
@@ -28,7 +27,6 @@ type StoreGetResponse struct {
 // DELETE
 type StoreDeleteRequest struct {
 	Key         string
-	User        string
 	RespChannel chan StoreDeleteResponse
 }
 
@@ -47,7 +45,6 @@ type ListGetRequest struct {
 type ListGetResponse struct {
 	Data struct {
 		Key    string `json:"key"`
-		Owner  string `json:"owner"`
 		Writes int    `json:"writes"`
 		Reads  int    `json:"reads"`
 		Age    int64  `json:"age"`
@@ -63,7 +60,6 @@ type ListGetAllRequest struct {
 type ListGetAllResponse struct {
 	Data []struct {
 		Key    string `json:"key"`
-		Owner  string `json:"owner"`
 		Writes int    `json:"writes"`
 		Reads  int    `json:"reads"`
 		Age    int64  `json:"age"`
