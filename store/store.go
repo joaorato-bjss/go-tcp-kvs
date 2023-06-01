@@ -21,18 +21,19 @@ var ErrNotFound = errors.New("not found")
 
 var storage Store
 var requestChannel chan any
-var depth int
 
-func InitStore(d int) {
+//var depth int
+
+func InitStore() {
 	storage = Store{
 		Data: make(map[string]*Entry),
 	}
 
 	requestChannel = make(chan any)
 
-	if d > 0 {
-		depth = d
-	}
+	//if d > 0 {
+	//	depth = d
+	//}
 
 	go listen()
 }
@@ -109,12 +110,12 @@ func put(key string, value string) error {
 		// create value anew
 		entry = &Entry{Value: value, Writes: 1, Reads: 0, LastAccessed: time.Now()}
 
-		// check if size is equal to depth
-		storeSize := len(storage.Data)
-
-		if depth > 0 && storeSize >= depth {
-			deleteLeastRecent()
-		}
+		//// check if size is equal to depth
+		//storeSize := len(storage.Data)
+		//
+		//if depth > 0 && storeSize >= depth {
+		//	deleteLeastRecent()
+		//}
 
 		// insert new value into store
 		storage.Data[key] = entry

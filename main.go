@@ -24,7 +24,7 @@ func main() {
 
 	port := setPort(args)
 
-	store.InitStore(0)
+	store.InitStore()
 
 	go startTCP(port)
 

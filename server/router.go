@@ -2,9 +2,11 @@ package server
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"go-tcp-kvs/server/handlers"
 	"go-tcp-kvs/server/logger"
+	"go-tcp-kvs/store"
 	"net"
 )
 
@@ -21,13 +23,39 @@ func HandleConnection(c net.Conn, done chan bool) {
 
 		switch method {
 		case "put":
-			handlers.Put(c, txt[3:])
+			err := handlers.Put(txt[3:])
+			if err != nil {
+				logger.ErrorLogger.Println(err.Error())
+				_, _ = fmt.Fprintf(c, "err")
+			} else {
+				_, _ = fmt.Fprintf(c, "ack")
+			}
 		case "get":
-			handlers.Get(c, txt[3:])
+			resp, err := handlers.Get(txt[3:])
+			if errors.Is(err, store.ErrNotFound) {
+				logger.ErrorLogger.Println(err.Error())
+				_, _ = fmt.Fprintf(c, "nil")
+			} else if err != nil {
+				logger.ErrorLogger.Println(err.Error())
+				_, _ = fmt.Fprintf(c, "err")
+			} else {
+				_, _ = fmt.Fprintf(c, "val"+resp)
+			}
 		case "del":
-			handlers.Delete(c, txt[3:])
+			err := handlers.Delete(txt[3:])
+			if err != nil {
+				logger.ErrorLogger.Println(err.Error())
+				_, _ = fmt.Fprintf(c, "err")
+			} else {
+				_, _ = fmt.Fprintf(c, "ack")
+			}
 		case "bye":
-			handlers.Bye(c, done)
+			done <- true
+			err := c.Close()
+			if err != nil {
+				logger.ErrorLogger.Println(err.Error())
+			}
+
 		default:
 			logger.ErrorLogger.Println("No valid method. Use 'put', 'get' or 'del'")
 			_, _ = fmt.Fprintf(c, "err")

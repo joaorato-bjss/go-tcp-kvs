@@ -2,48 +2,41 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
-	"go-tcp-kvs/server/logger"
 	"go-tcp-kvs/store"
-	"net"
 	"strconv"
 )
 
-func Get(c net.Conn, command string) {
+func Get(command string) (string, error) {
 
 	key, endIndex, err := validateGetProtocol(command, 0)
 	if err != nil {
-		logger.ErrorLogger.Println(err.Error())
-		_, _ = fmt.Fprintf(c, "err")
-		return
+		return "", err
 	}
 	if endIndex != len(command) {
-		logger.ErrorLogger.Println("Wrong format. Command does not satisfy the protocol")
-		_, _ = fmt.Fprintf(c, "err")
-		return
+		return "", errors.New("wrong format. Command does not satisfy the protocol")
 	}
 
 	// get value with "key" from store
 	value := store.DoStoreGet(key)
 	if value.Error != nil {
-		logger.ErrorLogger.Println(value.Error.Error())
-		_, _ = fmt.Fprintf(c, "nil")
-		return
+		return "", value.Error
 	}
 
 	// create response that satisfies the protocol
 	resp := createResponseWithProtocol(value.Data)
 
-	_, _ = fmt.Fprintf(c, "val"+resp)
+	return resp, nil
 }
 
 func validateGetProtocol(command string, startIndex int) (string, int, error) {
+	// Part 1
 	lengthByteStr := command[startIndex : startIndex+1]
 	lengthByte, err := strconv.Atoi(lengthByteStr)
 	if err != nil || lengthByte <= 0 || lengthByte > 9 {
 		return "", 0, errors.New("wrong format. First part of argument has to be a single byte [1-9]")
 	}
 
+	// Part 2
 	lengthStr := command[startIndex+1 : startIndex+1+lengthByte]
 
 	length, err := strconv.Atoi(lengthStr)
@@ -52,6 +45,9 @@ func validateGetProtocol(command string, startIndex int) (string, int, error) {
 	}
 
 	endIndex := startIndex + 1 + lengthByte + length
+	if endIndex > len(command) {
+		return "", 0, errors.New("wrong format. Third part of argument has to be " + strconv.Itoa(length) + " character\n")
+	}
 
 	return command[startIndex+1+lengthByte : endIndex], endIndex, nil
 }
