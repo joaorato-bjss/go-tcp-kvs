@@ -52,6 +52,12 @@ func TestPut2(t *testing.T) {
 			t.Error("expected error, got none")
 		}
 	})
+	t.Run("TestInvalidSmallKeySmallValue3", func(t *testing.T) {
+		err := Put("1")
+		if err == nil {
+			t.Error("expected error, got none")
+		}
+	})
 	t.Run("TestInvalidBigKeyBigValue1", func(t *testing.T) {
 		err := Put("210firstkey0115vvalue")
 		if err == nil {
@@ -59,7 +65,19 @@ func TestPut2(t *testing.T) {
 		}
 	})
 	t.Run("TestInvalidBigKeyBigValue2", func(t *testing.T) {
+		err := Put("put210firstkey")
+		if err == nil {
+			t.Error("expected error, got none")
+		}
+	})
+	t.Run("TestInvalidBigKeyBigValue3", func(t *testing.T) {
 		err := Put("210firstkey0115val")
+		if err == nil {
+			t.Error("expected error, got none")
+		}
+	})
+	t.Run("TestInvalidBigKeyBigValue4", func(t *testing.T) {
+		err := Put("210firstkey01511111")
 		if err == nil {
 			t.Error("expected error, got none")
 		}
@@ -93,10 +111,46 @@ func TestGet2(t *testing.T) {
 			t.Error("expected '11v' and no error, got: ", resp, err.Error())
 		}
 	})
+	t.Run("TestValidSmallKeySmallValueVariable1", func(t *testing.T) {
+		resp, err := Get("11k10")
+		if err != nil || resp != "11v" {
+			t.Error("expected '11v' and no error, got: ", resp, err.Error())
+		}
+	})
+	t.Run("TestValidSmallKeySmallValueVariable2", func(t *testing.T) {
+		resp, err := Get("11k11")
+		if err != nil || resp != "11v" {
+			t.Error("expected '11v' and no error, got: ", resp, err.Error())
+		}
+	})
+	t.Run("TestValidSmallKeySmallValueVariable3", func(t *testing.T) {
+		resp, err := Get("11k12")
+		if err != nil || resp != "11v" {
+			t.Error("expected '11v' and no error, got: ", resp, err.Error())
+		}
+	})
+	t.Run("TestInvalidSmallKeySmallValueVariable", func(t *testing.T) {
+		_, err := Get("11k111")
+		if err == nil {
+			t.Error("expected error, got none")
+		}
+	})
+	t.Run("TestInvalidSmallKeySmallValueVariable2", func(t *testing.T) {
+		_, err := Get("11k1a")
+		if err == nil {
+			t.Error("expected error, got none")
+		}
+	})
 	t.Run("TestValidBigKeyBigValue", func(t *testing.T) {
 		resp, err := Get("210firstkey01")
 		if err != nil || resp != "16value2" {
 			t.Error("expected '16value2' and no error, got: ", resp, err.Error())
+		}
+	})
+	t.Run("TestValidBigKeyBigValueVariable1", func(t *testing.T) {
+		resp, err := Get("210firstkey0113")
+		if err != nil || resp != "13val" {
+			t.Error("expected '13val' and no error, got: ", resp, err.Error())
 		}
 	})
 	t.Run("TestValidOnlyNumbers", func(t *testing.T) {

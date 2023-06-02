@@ -7,7 +7,7 @@ import (
 
 func Delete(command string) error {
 	// delete uses the same format as get
-	key, endIndex, err := validateGetProtocol(command, 0)
+	key, endIndex, err := validateProtocol(command, 0)
 	if err != nil {
 		return err
 	}

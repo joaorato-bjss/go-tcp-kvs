@@ -107,6 +107,18 @@ func TestPut(t *testing.T) {
 			t.Error("expected 'err', got: ", string(b))
 		}
 	})
+	t.Run("TestInvalidSmallKeySmallValue3", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("put1\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 3)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "err" {
+			t.Error("expected 'err', got: ", string(b))
+		}
+	})
 	t.Run("TestInvalidBigKeyBigValue1", func(t *testing.T) {
 		if _, err2 := c.Write([]byte("put210firstkey0115vvalue\n")); err2 != nil {
 			t.Error("error writing to server: ", err2)
@@ -120,7 +132,31 @@ func TestPut(t *testing.T) {
 		}
 	})
 	t.Run("TestInvalidBigKeyBigValue2", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("put210firstkey\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 3)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "err" {
+			t.Error("expected 'err', got: ", string(b))
+		}
+	})
+	t.Run("TestInvalidBigKeyBigValue3", func(t *testing.T) {
 		if _, err2 := c.Write([]byte("put210firstkey0115val\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 3)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "err" {
+			t.Error("expected 'err', got: ", string(b))
+		}
+	})
+	t.Run("TestInvalidBigKeyBigValue4", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("put210firstkey01511111\n")); err2 != nil {
 			t.Error("error writing to server: ", err2)
 		}
 		b := make([]byte, 3)
@@ -204,6 +240,66 @@ func TestGet(t *testing.T) {
 			t.Error("expected 'val11v', got: ", string(b))
 		}
 	})
+	t.Run("TestValidSmallKeySmallValueVariable1", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("get11k10\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 6)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "val11v" {
+			t.Error("expected 'val11v', got: ", string(b))
+		}
+	})
+	t.Run("TestValidSmallKeySmallValueVariable2", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("get11k11\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 6)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "val11v" {
+			t.Error("expected 'val11v', got: ", string(b))
+		}
+	})
+	t.Run("TestValidSmallKeySmallValueVariable3", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("get11k12\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 6)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "val11v" {
+			t.Error("expected 'val11v', got: ", string(b))
+		}
+	})
+	t.Run("TestInvalidSmallKeySmallValueVariable", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("get11k111\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 3)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "err" {
+			t.Error("expected 'err', got: ", string(b))
+		}
+	})
+	t.Run("TestInvalidSmallKeySmallValueVariable2", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("get11k11a\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 3)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "err" {
+			t.Error("expected 'err', got: ", string(b))
+		}
+	})
 	t.Run("TestValidBigKeyBigValue", func(t *testing.T) {
 		if _, err2 := c.Write([]byte("get210firstkey01\n")); err2 != nil {
 			t.Error("error writing to server: ", err2)
@@ -214,6 +310,18 @@ func TestGet(t *testing.T) {
 		}
 		if string(b) != "val16value2" {
 			t.Error("expected 'val16value2', got: ", string(b))
+		}
+	})
+	t.Run("TestValidBigKeyBigValueVariable1", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("get210firstkey0113\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 8)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "val13val" {
+			t.Error("expected 'val13val', got: ", string(b))
 		}
 	})
 	t.Run("TestValidOnlyNumbers", func(t *testing.T) {

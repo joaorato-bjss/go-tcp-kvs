@@ -69,29 +69,29 @@ func listen() {
 			event.RespChannel <- storeDeleteResponse
 			close(event.RespChannel)
 
-		case ListGetRequest:
-			writes, reads, age, err := list(event.Key)
-			listGetResponse := ListGetResponse{
-				Data: struct {
-					Key    string `json:"key"`
-					Writes int    `json:"writes"`
-					Reads  int    `json:"reads"`
-					Age    int64  `json:"age"`
-				}{event.Key, writes, reads, age},
-				Error: err,
-			}
-
-			event.RespChannel <- listGetResponse
-			close(event.RespChannel)
-
-		case ListGetAllRequest:
-			data := listAll()
-			listGetAllResponse := ListGetAllResponse{
-				Data: data,
-			}
-
-			event.RespChannel <- listGetAllResponse
-			close(event.RespChannel)
+			//case ListGetRequest:
+			//	writes, reads, age, err := list(event.Key)
+			//	listGetResponse := ListGetResponse{
+			//		Data: struct {
+			//			Key    string `json:"key"`
+			//			Writes int    `json:"writes"`
+			//			Reads  int    `json:"reads"`
+			//			Age    int64  `json:"age"`
+			//		}{event.Key, writes, reads, age},
+			//		Error: err,
+			//	}
+			//
+			//	event.RespChannel <- listGetResponse
+			//	close(event.RespChannel)
+			//
+			//case ListGetAllRequest:
+			//	data := listAll()
+			//	listGetAllResponse := ListGetAllResponse{
+			//		Data: data,
+			//	}
+			//
+			//	event.RespChannel <- listGetAllResponse
+			//	close(event.RespChannel)
 		}
 	}
 }
@@ -148,62 +148,62 @@ func del(key string) error {
 	return nil
 }
 
-func list(key string) (int, int, int64, error) {
-
-	entry, ok := storage.Data[key]
-
-	if !ok {
-		return 0, 0, 0, fmt.Errorf("list: key %q: %w", key, ErrNotFound)
-	}
-
-	age := int64(time.Since(entry.LastAccessed) / time.Millisecond)
-
-	return entry.Writes, entry.Reads, age, nil
-}
-
-func listAll() []struct {
-	Key    string `json:"key"`
-	Writes int    `json:"writes"`
-	Reads  int    `json:"reads"`
-	Age    int64  `json:"age"`
-} {
-
-	data := storage.Data
-	entries := make([]struct {
-		Key    string `json:"key"`
-		Writes int    `json:"writes"`
-		Reads  int    `json:"reads"`
-		Age    int64  `json:"age"`
-	}, 0, len(data))
-
-	for key, entry := range data {
-		age := int64(time.Since(entry.LastAccessed) / time.Millisecond)
-		entries = append(entries, struct {
-			Key    string `json:"key"`
-			Writes int    `json:"writes"`
-			Reads  int    `json:"reads"`
-			Age    int64  `json:"age"`
-		}{key, entry.Writes, entry.Reads, age})
-	}
-
-	return entries
-}
-
-func deleteLeastRecent() {
-	lruKey := ""
-	lrDate := time.Now()
-
-	for key := range storage.Data {
-		lruKey = key
-		break
-	}
-
-	for key, entry := range storage.Data {
-		if entry.LastAccessed.Before(lrDate) {
-			lrDate = entry.LastAccessed
-			lruKey = key
-		}
-	}
-
-	delete(storage.Data, lruKey)
-}
+//func list(key string) (int, int, int64, error) {
+//
+//	entry, ok := storage.Data[key]
+//
+//	if !ok {
+//		return 0, 0, 0, fmt.Errorf("list: key %q: %w", key, ErrNotFound)
+//	}
+//
+//	age := int64(time.Since(entry.LastAccessed) / time.Millisecond)
+//
+//	return entry.Writes, entry.Reads, age, nil
+//}
+//
+//func listAll() []struct {
+//	Key    string `json:"key"`
+//	Writes int    `json:"writes"`
+//	Reads  int    `json:"reads"`
+//	Age    int64  `json:"age"`
+//} {
+//
+//	data := storage.Data
+//	entries := make([]struct {
+//		Key    string `json:"key"`
+//		Writes int    `json:"writes"`
+//		Reads  int    `json:"reads"`
+//		Age    int64  `json:"age"`
+//	}, 0, len(data))
+//
+//	for key, entry := range data {
+//		age := int64(time.Since(entry.LastAccessed) / time.Millisecond)
+//		entries = append(entries, struct {
+//			Key    string `json:"key"`
+//			Writes int    `json:"writes"`
+//			Reads  int    `json:"reads"`
+//			Age    int64  `json:"age"`
+//		}{key, entry.Writes, entry.Reads, age})
+//	}
+//
+//	return entries
+//}
+//
+//func deleteLeastRecent() {
+//	lruKey := ""
+//	lrDate := time.Now()
+//
+//	for key := range storage.Data {
+//		lruKey = key
+//		break
+//	}
+//
+//	for key, entry := range storage.Data {
+//		if entry.LastAccessed.Before(lrDate) {
+//			lrDate = entry.LastAccessed
+//			lruKey = key
+//		}
+//	}
+//
+//	delete(storage.Data, lruKey)
+//}
