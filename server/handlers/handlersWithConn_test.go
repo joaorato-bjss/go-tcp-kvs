@@ -11,6 +11,18 @@ func TestPut(t *testing.T) {
 	if err != nil {
 		t.Error("could not connect to server: ", err)
 	}
+	t.Run("TestSmallString", func(t *testing.T) {
+		if _, err2 := c.Write([]byte("p\n")); err2 != nil {
+			t.Error("error writing to server: ", err2)
+		}
+		b := make([]byte, 3)
+		if _, err3 := c.Read(b); err3 != nil {
+			t.Error("error reading from server: ", err3)
+		}
+		if string(b) != "err" {
+			t.Error("expected 'err', got: ", string(b))
+		}
+	})
 	t.Run("TestBadMethod", func(t *testing.T) {
 		if _, err2 := c.Write([]byte("pu11k11v\n")); err2 != nil {
 			t.Error("error writing to server: ", err2)
